@@ -1,22 +1,28 @@
-from fastapi import APIRouter
-from models.user import User
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from database import get_db
+from models.user import User, UserCreate, UserResponse
+from pydantic import BaseModel
 
 router = APIRouter()
 
-users_db = []
 
-@router.post("/users/", response_model=User)
-async def create_user(user: User):
-    users_db.append(user)
-    return user
+class UserCreate(BaseModel):
+    name: str
+
+
+@router.post("/users/", response_model=UserResponse)
+async def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    db_user = user(
+        name=user.name,
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
 
 @router.get("/users/")
-async def read_users():
-    return users_db
-
-@router.get("/users/{user_id}", response_model=User)
-async def read_user(user_id: int):
-    for user in users_db:
-        if user.id == user_id:
-            return user
-    return None  # throw error here
+async def read_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    users = db.query(User).offset(skip).limit(limit).all()
+    return users

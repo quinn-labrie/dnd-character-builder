@@ -1,31 +1,28 @@
-from fastapi import APIRouter
-from models.char import Char
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from database import get_db
+from models.char import CharCreate, CharResponse, Char  # Updated import
+from pydantic import BaseModel
 
 router = APIRouter()
 
-chars_db = [] # temporary until db is setup
 
-@router.post("/chars", response_model=Char)
-async def create_char(char: Char):
-    chars_db.append(char)
-    return char
+class CharCreate(BaseModel):
+    name: str
+
+
+@router.post("/chars/", response_model=CharResponse)
+async def create_char(char: CharCreate, db: Session = Depends(get_db)):
+    db_char = char(
+        name=char.name,
+    )
+    db.add(db_char)
+    db.commit()
+    db.refresh(db_char)
+    return db_char
+
 
 @router.get("/chars/")
-async def read_chars():
-    return chars_db
-
-@router.get("/chars/{char_id}", response_model=Char)
-async def read_char(char_id: int):
-    for char in chars_db:
-        if char_id == char.id:
-            return char
-    return None # throw error here
-
-@router.delete('/chars/{char_id}')
-async def delete_char(char_id: int):
-    for index, char in chars_db:
-        if char_id == char.id:
-            chars_db.remove(index)
-            return
-    return None # throw error here
-    
+async def read_chars(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    chars = db.query(Char).offset(skip).limit(limit).all()
+    return chars

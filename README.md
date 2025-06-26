@@ -1,11 +1,8 @@
 # DND Character Builder
 
 FastApi backend
+`cd backend && source venv/bin/activate && uvicorn main:app --reload`
+
 Next frontend
-
-
-bash
-`chmod +x start.sh`
-
-`./start.sh`
+`cd frontend && npm run dev`
 
