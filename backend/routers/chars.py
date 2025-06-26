@@ -14,7 +14,6 @@ async def create_char(char: CharCreate, db: Session = Depends(get_db)):
     db.refresh(db_char)
     return db_char
 
-
 @router.get("/chars/")
 async def read_chars(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     chars = db.query(Char).offset(skip).limit(limit).all()

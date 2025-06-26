@@ -8,19 +8,25 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
+    username = Column(String, index=True, unique=True)
+    hashed_password = Column(String)
     
     chars = relationship("Char", back_populates="owner")
 
 
 
 class UserCreate(BaseModel):
-    name: str
+    username: str
+    password: str
 
 
 class UserResponse(BaseModel):
     id: int
-    name: str
+    username: str
 
     class Config:
         orm_mode = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
