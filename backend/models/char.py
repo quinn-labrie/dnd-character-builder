@@ -16,11 +16,13 @@ class Char(Base):
 
 class CharCreate(BaseModel):
     name: str
+    owner_id: int
 
 
 class CharResponse(BaseModel):
     id: int
     name: str
+    owner_id: int
 
     class Config:
         orm_mode = True

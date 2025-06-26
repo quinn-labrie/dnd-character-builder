@@ -1,21 +1,14 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import get_db
-from models.char import CharCreate, CharResponse, Char  # Updated import
-from pydantic import BaseModel
+from models.char import CharCreate, CharResponse, Char
 
 router = APIRouter()
 
 
-class CharCreate(BaseModel):
-    name: str
-
-
 @router.post("/chars/", response_model=CharResponse)
 async def create_char(char: CharCreate, db: Session = Depends(get_db)):
-    db_char = char(
-        name=char.name,
-    )
+    db_char = Char(name=char.name, owner_id=char.owner_id)
     db.add(db_char)
     db.commit()
     db.refresh(db_char)
